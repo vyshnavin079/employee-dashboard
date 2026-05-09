@@ -155,20 +155,67 @@ const adminAccount = {
 };
 
 const rewardHistory = [
-  { date: "2026-05-02", employeeId: "EMP-1003", reason: "Sprint excellence", points: 80 },
-  { date: "2026-05-03", employeeId: "EMP-1001", reason: "Design improvement", points: 50 },
-  { date: "2026-05-04", employeeId: "EMP-1008", reason: "Quarter close support", points: 60 },
-  { date: "2026-05-05", employeeId: "EMP-1006", reason: "Bug bash ownership", points: 45 },
-  { date: "2026-05-06", employeeId: "EMP-1007", reason: "Campaign launch", points: 35 }
+  { date: "2026-05-02", employeeId: "EMP-1003", reason: "Sprint excellence", points: 80, bonusType: "Gift Card", bonusValue: 4000 },
+  { date: "2026-05-03", employeeId: "EMP-1001", reason: "Design improvement", points: 50, bonusType: "Meal Voucher", bonusValue: 1500 },
+  { date: "2026-05-04", employeeId: "EMP-1008", reason: "Quarter close support", points: 60, bonusType: "Performance Bonus", bonusValue: 6000 },
+  { date: "2026-05-05", employeeId: "EMP-1006", reason: "Bug bash ownership", points: 45, bonusType: "Extra Leave Day", bonusValue: 1 },
+  { date: "2026-05-06", employeeId: "EMP-1007", reason: "Campaign launch", points: 35, bonusType: "Spot Bonus", bonusValue: 2500 }
+];
+
+const leaveRequests = [
+  { id: "LR-001", employeeId: "EMP-1002", dateFrom: "2026-05-09", dateTo: "2026-05-10", reason: "Family event", status: "Approved" },
+  { id: "LR-002", employeeId: "EMP-1005", dateFrom: "2026-05-12", dateTo: "2026-05-12", reason: "Medical checkup", status: "Pending" }
+];
+
+const feedbackEntries = [
+  {
+    id: "FB-001",
+    date: "2026-05-06",
+    toEmployeeId: "EMP-1003",
+    by: "Diya Patel",
+    rating: 5,
+    category: "Collaboration",
+    comment: "Excellent mentoring support for new team members.",
+    sentiment: "Positive"
+  },
+  {
+    id: "FB-002",
+    date: "2026-05-07",
+    toEmployeeId: "EMP-1001",
+    by: "Sara Khan",
+    rating: 4,
+    category: "Ownership",
+    comment: "Handled sprint blockers quickly and clearly.",
+    sentiment: "Positive"
+  }
+];
+
+const aiRecommendations = [
+  {
+    employeeId: "EMP-1003",
+    recommendedPoints: 110,
+    recommendedBonusType: "Performance Bonus",
+    fairnessFlag: "Fair",
+    explanation: "High performance, high productivity, and positive feedback trend.",
+    approved: true
+  },
+  {
+    employeeId: "EMP-1005",
+    recommendedPoints: 30,
+    recommendedBonusType: "Learning Voucher",
+    fairnessFlag: "Needs Review",
+    explanation: "Low attendance and task completion. Suggest coaching-linked reward.",
+    approved: false
+  }
 ];
 
 const dailyAttendance = [
-  { name: "Aarav Sharma", status: "Present" },
-  { name: "Diya Patel", status: "Leave" },
-  { name: "Kabir Singh", status: "Present" },
-  { name: "Meera Iyer", status: "Late" },
-  { name: "Rohan Verma", status: "Absent" },
-  { name: "Ananya Gupta", status: "Present" },
-  { name: "Vihaan Rao", status: "Present" },
-  { name: "Sara Khan", status: "Present" }
+  { employeeId: "EMP-1001", date: "2026-05-09", status: "Present" },
+  { employeeId: "EMP-1002", date: "2026-05-09", status: "Leave" },
+  { employeeId: "EMP-1003", date: "2026-05-09", status: "Present" },
+  { employeeId: "EMP-1004", date: "2026-05-09", status: "Late" },
+  { employeeId: "EMP-1005", date: "2026-05-09", status: "Absent" },
+  { employeeId: "EMP-1006", date: "2026-05-09", status: "Present" },
+  { employeeId: "EMP-1007", date: "2026-05-09", status: "Present" },
+  { employeeId: "EMP-1008", date: "2026-05-09", status: "Present" }
 ];

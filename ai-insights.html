@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Insights</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="logo">PulseBoard</div>
+        <nav class="nav-links">
+          <a href="dashboard.html">📊 Dashboard</a>
+          <a href="employees.html">👤 Employees</a>
+          <a href="attendance.html">🗓 Attendance</a>
+          <a href="performance.html">🚀 Performance</a>
+          <a href="rewards.html">🎖 Rewards</a>
+          <a href="feedback.html">💬 Feedback</a>
+          <a class="active" href="ai-insights.html">🤖 AI Insights</a>
+          <a href="settings.html">⚙ Settings</a>
+        </nav>
+      </aside>
+      <main class="content">
+        <header class="topbar">
+          <div class="title-group">
+            <h1>AI Reward Insights</h1>
+            <p>Data-driven recommendations for fair and efficient rewards.</p>
+          </div>
+          <div class="avatar">AI</div>
+        </header>
+
+        <section class="card">
+          <h2 class="section-title">Tools Integration</h2>
+          <div class="tool-grid">
+            <div class="rank-card"><strong>Microsoft Copilot</strong><span>Policy drafting & logic support</span></div>
+            <div class="rank-card"><strong>Power BI</strong><span>Fairness dashboards and trend analysis</span></div>
+            <div class="rank-card"><strong>Canva AI</strong><span>Badge designs and visuals</span></div>
+            <div class="rank-card"><strong>Python/ML</strong><span>Scoring, recommendations, fairness flags</span></div>
+          </div>
+          <div class="toolbar section">
+            <button id="export-ai-data" class="btn-secondary" type="button">Export Data (Power BI / Python)</button>
+            <button id="run-ai-recommendation" class="btn-primary" type="button">Run AI Recommendation</button>
+          </div>
+          <p id="ai-run-status" class="muted"></p>
+        </section>
+
+        <section class="section table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>AI Points</th>
+                <th>Bonus Type</th>
+                <th>Fairness Flag</th>
+                <th>Explanation</th>
+                <th>Approval</th>
+              </tr>
+            </thead>
+            <tbody id="ai-recommendation-body"></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

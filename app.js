@@ -1,13 +1,44 @@
 const sourceEmployees = typeof employees !== "undefined" ? employees : [];
 const sourceRewardHistory = typeof rewardHistory !== "undefined" ? rewardHistory : [];
 const sourceAdminAccount = typeof adminAccount !== "undefined" ? adminAccount : null;
+const sourceDailyAttendance = typeof dailyAttendance !== "undefined" ? dailyAttendance : [];
+const sourceLeaveRequests = typeof leaveRequests !== "undefined" ? leaveRequests : [];
+const sourceFeedbackEntries = typeof feedbackEntries !== "undefined" ? feedbackEntries : [];
+const sourceAiRecommendations = typeof aiRecommendations !== "undefined" ? aiRecommendations : [];
+
 const STORAGE_KEY = "employee-dashboard-employees";
+const REWARD_HISTORY_KEY = "employee-dashboard-reward-history";
+const ATTENDANCE_KEY = "employee-dashboard-attendance-logs";
+const LEAVE_KEY = "employee-dashboard-leave-requests";
+const FEEDBACK_KEY = "employee-dashboard-feedback";
+const AI_KEY = "employee-dashboard-ai-recommendations";
 const SESSION_KEY = "employee-dashboard-session";
 const ADMIN_STORAGE_KEY = "employee-dashboard-admin-account";
+
 const state = {
   employees: loadEmployees(),
-  admin: loadAdminAccount()
+  admin: loadAdminAccount(),
+  rewardHistory: loadArray(REWARD_HISTORY_KEY, sourceRewardHistory),
+  attendanceLogs: loadArray(ATTENDANCE_KEY, sourceDailyAttendance),
+  leaveRequests: loadArray(LEAVE_KEY, sourceLeaveRequests),
+  feedbackEntries: loadArray(FEEDBACK_KEY, sourceFeedbackEntries),
+  aiRecommendations: loadArray(AI_KEY, sourceAiRecommendations)
 };
+
+function loadArray(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return [...fallback];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [...fallback];
+  } catch (_error) {
+    return [...fallback];
+  }
+}
+
+function saveArray(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
 
 function getSession() {
   try {
@@ -45,6 +76,10 @@ function visibleEmployees() {
   return state.employees.filter((e) => e.id === user.id);
 }
 
+function employeeNameById(id) {
+  return state.employees.find((e) => e.id === id)?.name || id;
+}
+
 function requireAuthOnProtectedPages() {
   const path = (window.location.pathname || "").toLowerCase();
   if (path.endsWith("/") || path.endsWith("/index.html") || path.endsWith("index.html")) return;
@@ -55,10 +90,8 @@ function requireAuthOnProtectedPages() {
 function initTopbarUserUI() {
   const topbar = document.querySelector(".topbar");
   if (!topbar) return;
-
   const user = currentUser();
   if (!user) return;
-
   let actions = document.getElementById("topbar-actions");
   if (!actions) {
     actions = document.createElement("div");
@@ -66,13 +99,11 @@ function initTopbarUserUI() {
     actions.className = "topbar-actions";
     topbar.appendChild(actions);
   }
-
   const initials = (user.name || "User")
     .split(" ")
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase())
     .join("");
-
   actions.innerHTML = `
     <div class="user-chip">
       <div class="avatar">${initials}</div>
@@ -83,7 +114,6 @@ function initTopbarUserUI() {
     </div>
     <button id="logout-btn" class="btn-secondary" type="button">Logout</button>
   `;
-
   actions.querySelector("#logout-btn")?.addEventListener("click", () => {
     clearSession();
     window.location.href = "index.html";
@@ -132,15 +162,26 @@ function appSummary() {
   const present = list.filter((e) => e.attendanceStatus === "Present").length;
   const absent = list.filter((e) => e.attendanceStatus === "Absent").length;
   const onLeave = list.filter((e) => e.attendanceStatus === "Leave").length;
-  const topPerformer = [...list].sort((a, b) => b.performanceScore - a.performanceScore)[0] || {
-    name: "N/A"
-  };
+  const topPerformer = [...list].sort((a, b) => b.performanceScore - a.performanceScore)[0] || { name: "N/A" };
   const rewards = list.reduce((acc, item) => acc + (Number(item.rewardPoints) || 0), 0);
   return { total, present, absent, onLeave, topPerformer, rewards };
 }
 
 function statusClass(status) {
   return (status || "").toLowerCase();
+}
+
+function ensureSelectEmployees(selectId, includeAllOption = false) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  const list = visibleEmployees();
+  select.innerHTML = "";
+  if (includeAllOption) {
+    select.innerHTML += `<option value="All">All Employees</option>`;
+  }
+  list.forEach((emp) => {
+    select.innerHTML += `<option value="${emp.id}">${emp.name} (${emp.id})</option>`;
+  });
 }
 
 function renderDashboard() {
@@ -307,11 +348,8 @@ function toggleEmployeeForm(show) {
 
 function upsertEmployee(employee) {
   const index = state.employees.findIndex((e) => e.id === employee.id);
-  if (index >= 0) {
-    state.employees[index] = employee;
-  } else {
-    state.employees.push(employee);
-  }
+  if (index >= 0) state.employees[index] = employee;
+  else state.employees.push(employee);
   saveEmployees();
 }
 
@@ -344,14 +382,13 @@ function renderAttendance() {
   if (listRoot) {
     const list = visibleEmployees();
     listRoot.innerHTML = list
-      .map(
-        (employee) => `
-      <div class="rank-card">
-        <span>${employee.name}</span>
-        <span class="status ${statusClass(employee.attendanceStatus)}">${employee.attendanceStatus}</span>
-      </div>
-    `
-      )
+      .map((employee) => {
+        const latest = state.attendanceLogs
+          .filter((log) => log.employeeId === employee.id)
+          .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        const status = latest?.status || employee.attendanceStatus || "N/A";
+        return `<div class="rank-card"><span>${employee.name}</span><span class="status ${statusClass(status)}">${status}</span></div>`;
+      })
       .join("");
   }
 
@@ -384,6 +421,23 @@ function renderAttendance() {
   if (bar && text) {
     bar.style.width = `${percent}%`;
     text.textContent = `${percent}% Overall Attendance`;
+  }
+
+  const leaveBody = document.getElementById("leave-body");
+  if (leaveBody) {
+    leaveBody.innerHTML = state.leaveRequests
+      .filter((req) => isPrivileged(currentUser()) || req.employeeId === currentUser()?.id)
+      .map(
+        (req) => `<tr>
+        <td>${req.id}</td>
+        <td>${employeeNameById(req.employeeId)}</td>
+        <td>${req.dateFrom}</td>
+        <td>${req.dateTo}</td>
+        <td>${req.reason}</td>
+        <td><span class="status ${statusClass(req.status)}">${req.status}</span></td>
+      </tr>`
+      )
+      .join("");
   }
 }
 
@@ -433,16 +487,18 @@ function renderRewards() {
       return;
     }
     const best = [...list].sort((a, b) => b.rewardPoints - a.rewardPoints)[0];
+    const badgePills = (best.badges || []).map((badge) => `<span class="badge-pill">🏅 ${badge}</span>`).join("");
     monthCard.innerHTML = `
       <h3>Employee of the Month</h3>
       <div class="employee-cell">
-        <img class="employee-photo" src="${best.photo}" alt="${best.name}">
         <div>
           <div class="value">${best.name}</div>
           <div class="muted">${best.role}</div>
         </div>
       </div>
       <p><strong>${best.rewardPoints}</strong> reward points earned</p>
+      <p class="muted">Bonus Eligible: ${best.bonusEligible ? "Yes" : "No"}</p>
+      <div class="badge-pills">${badgePills || "<span class='muted'>No badges assigned yet.</span>"}</div>
     `;
   }
 
@@ -453,7 +509,12 @@ function renderRewards() {
       .map(
         (emp) => `
       <div class="rank-card">
-        <span>${emp.name}</span>
+        <div>
+          <span>${emp.name}</span>
+          <div class="badge-pills">
+            ${(emp.badges || []).slice(0, 2).map((badge) => `<span class="badge-pill">🏅 ${badge}</span>`).join("")}
+          </div>
+        </div>
         <strong>${emp.rewardPoints} pts</strong>
       </div>
     `
@@ -463,7 +524,8 @@ function renderRewards() {
 
   const historyBody = document.getElementById("reward-history-body");
   if (historyBody) {
-    historyBody.innerHTML = sourceRewardHistory
+    historyBody.innerHTML = state.rewardHistory
+      .filter((entry) => isPrivileged(currentUser()) || entry.employeeId === currentUser()?.id)
       .map((entry) => {
         const emp = state.employees.find((e) => e.id === entry.employeeId);
         return `
@@ -472,11 +534,50 @@ function renderRewards() {
             <td>${emp ? emp.name : entry.employeeId}</td>
             <td>${entry.reason}</td>
             <td>${entry.points}</td>
+            <td>${entry.bonusType || "N/A"}</td>
+            <td>${entry.bonusValue ?? "-"}</td>
           </tr>
         `;
       })
       .join("");
   }
+}
+
+function renderFeedback() {
+  const body = document.getElementById("feedback-body");
+  if (!body) return;
+  body.innerHTML = state.feedbackEntries
+    .filter((entry) => isPrivileged(currentUser()) || entry.toEmployeeId === currentUser()?.id)
+    .map(
+      (entry) => `<tr>
+      <td>${entry.date}</td>
+      <td>${employeeNameById(entry.toEmployeeId)}</td>
+      <td>${entry.by}</td>
+      <td>${entry.category}</td>
+      <td>${entry.rating}</td>
+      <td>${entry.sentiment}</td>
+      <td>${entry.comment}</td>
+    </tr>`
+    )
+    .join("");
+}
+
+function renderAiInsights() {
+  const body = document.getElementById("ai-recommendation-body");
+  if (!body) return;
+  body.innerHTML = state.aiRecommendations
+    .filter((entry) => isPrivileged(currentUser()) || entry.employeeId === currentUser()?.id)
+    .map(
+      (entry) => `<tr>
+      <td>${employeeNameById(entry.employeeId)}</td>
+      <td>${entry.recommendedPoints}</td>
+      <td>${entry.recommendedBonusType}</td>
+      <td><span class="status ${entry.fairnessFlag === "Fair" ? "present" : "late"}">${entry.fairnessFlag}</span></td>
+      <td>${entry.explanation}</td>
+      <td>${entry.approved ? "Approved" : "Pending Review"}</td>
+    </tr>`
+    )
+    .join("");
 }
 
 function bindEmployeesPage() {
@@ -488,9 +589,7 @@ function bindEmployeesPage() {
   const form = document.getElementById("employee-form");
   const tableBody = document.getElementById("employees-body");
   if (!tableBody) return;
-  const user = currentUser();
-  const canManage = isPrivileged(user);
-
+  const canManage = isPrivileged(currentUser());
   if (!canManage) {
     addBtn?.classList.add("hidden");
     deleteAllBtn?.classList.add("hidden");
@@ -507,8 +606,7 @@ function bindEmployeesPage() {
     form?.reset();
   });
   deleteAllBtn?.addEventListener("click", () => {
-    const confirmed = confirm("Delete all employees?");
-    if (!confirmed) return;
+    if (!confirm("Delete all employees?")) return;
     state.employees = [];
     saveEmployees();
     renderEmployees();
@@ -530,6 +628,153 @@ function bindEmployeesPage() {
   renderEmployees();
 }
 
+function bindAttendancePage() {
+  const attendanceForm = document.getElementById("attendance-form");
+  const leaveForm = document.getElementById("leave-form");
+  if (!attendanceForm && !leaveForm) return;
+
+  ensureSelectEmployees("attendance-employee");
+  ensureSelectEmployees("leave-employee");
+  const today = new Date().toISOString().split("T")[0];
+  const dateInput = document.getElementById("attendance-date");
+  if (dateInput && !dateInput.value) dateInput.value = today;
+
+  attendanceForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const employeeId = document.getElementById("attendance-employee")?.value;
+    const date = document.getElementById("attendance-date")?.value;
+    const status = document.getElementById("attendance-status")?.value;
+    if (!employeeId || !date || !status) return;
+    state.attendanceLogs.push({ employeeId, date, status });
+    saveArray(ATTENDANCE_KEY, state.attendanceLogs);
+    const employee = state.employees.find((e) => e.id === employeeId);
+    if (employee) employee.attendanceStatus = status;
+    saveEmployees();
+    renderAttendance();
+    attendanceForm.reset();
+    if (dateInput) dateInput.value = today;
+  });
+
+  leaveForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const employeeId = document.getElementById("leave-employee")?.value;
+    const dateFrom = document.getElementById("leave-from")?.value;
+    const dateTo = document.getElementById("leave-to")?.value;
+    const reason = document.getElementById("leave-reason")?.value?.trim();
+    if (!employeeId || !dateFrom || !dateTo || !reason) return;
+    const req = {
+      id: `LR-${String(state.leaveRequests.length + 1).padStart(3, "0")}`,
+      employeeId,
+      dateFrom,
+      dateTo,
+      reason,
+      status: isPrivileged(currentUser()) ? "Approved" : "Pending"
+    };
+    state.leaveRequests.push(req);
+    saveArray(LEAVE_KEY, state.leaveRequests);
+    renderAttendance();
+    leaveForm.reset();
+  });
+}
+
+function bindFeedbackPage() {
+  const form = document.getElementById("feedback-form");
+  if (!form) return;
+  ensureSelectEmployees("feedback-employee");
+  const select = document.getElementById("feedback-employee");
+  if (select && !select.firstElementChild) {
+    select.innerHTML = "<option value=''>No employees</option>";
+  }
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const toEmployeeId = document.getElementById("feedback-employee")?.value;
+    const by = document.getElementById("feedback-by")?.value?.trim();
+    const category = document.getElementById("feedback-category")?.value;
+    const rating = Number(document.getElementById("feedback-rating")?.value || 0);
+    const comment = document.getElementById("feedback-comment")?.value?.trim();
+    if (!toEmployeeId || !by || !category || !rating || !comment) return;
+    const sentiment = rating >= 4 ? "Positive" : rating <= 2 ? "Needs Attention" : "Neutral";
+    state.feedbackEntries.unshift({
+      id: `FB-${String(state.feedbackEntries.length + 1).padStart(3, "0")}`,
+      date: new Date().toISOString().split("T")[0],
+      toEmployeeId,
+      by,
+      rating,
+      category,
+      comment,
+      sentiment
+    });
+    saveArray(FEEDBACK_KEY, state.feedbackEntries);
+    renderFeedback();
+    form.reset();
+  });
+  renderFeedback();
+}
+
+function runAiModelInBrowser() {
+  const recommendations = state.employees.map((emp) => {
+    const feedbackForEmp = state.feedbackEntries.filter((f) => f.toEmployeeId === emp.id);
+    const avgFeedback =
+      feedbackForEmp.length > 0
+        ? feedbackForEmp.reduce((acc, item) => acc + Number(item.rating || 0), 0) / feedbackForEmp.length
+        : 3.5;
+    const score =
+      0.3 * Number(emp.attendancePercent || 0) +
+      0.35 * Number(emp.performanceScore || 0) +
+      0.25 * Number(emp.productivity || 0) +
+      0.1 * (avgFeedback * 20);
+    const recommendedPoints = Math.round(score);
+    const recommendedBonusType =
+      score >= 90 ? "Performance Bonus" : score >= 80 ? "Gift Card" : score >= 70 ? "Learning Voucher" : "Coaching Plan";
+    const fairnessFlag = Number(emp.attendanceStatus === "Leave") ? "Fair" : score < 55 ? "Needs Review" : "Fair";
+    return {
+      employeeId: emp.id,
+      recommendedPoints,
+      recommendedBonusType,
+      fairnessFlag,
+      explanation: `Attendance ${emp.attendancePercent}%, performance ${emp.performanceScore}, productivity ${emp.productivity}, feedback ${avgFeedback.toFixed(1)}/5.`,
+      approved: false
+    };
+  });
+  state.aiRecommendations = recommendations;
+  saveArray(AI_KEY, state.aiRecommendations);
+}
+
+function bindAiInsightsPage() {
+  const exportBtn = document.getElementById("export-ai-data");
+  const runBtn = document.getElementById("run-ai-recommendation");
+  if (!exportBtn && !runBtn) return;
+  const status = document.getElementById("ai-run-status");
+
+  exportBtn?.addEventListener("click", () => {
+    const payload = {
+      employees: state.employees,
+      attendanceLogs: state.attendanceLogs,
+      feedbackEntries: state.feedbackEntries,
+      rewards: state.rewardHistory
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "reward-system-export.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    if (status) status.textContent = "Exported dataset for Power BI / Python ML pipeline.";
+  });
+
+  runBtn?.addEventListener("click", () => {
+    runAiModelInBrowser();
+    renderAiInsights();
+    if (status) {
+      status.textContent =
+        "AI recommendations updated. For production use Python/ML model output and review fairness flags before approval.";
+    }
+  });
+
+  renderAiInsights();
+}
+
 function bindAuth() {
   const form = document.getElementById("login-form");
   if (!form) return;
@@ -537,15 +782,12 @@ function bindAuth() {
     event.preventDefault();
     const id = (document.getElementById("login-id")?.value || "").trim().toUpperCase();
     const pin = (document.getElementById("login-pin")?.value || "").trim();
-    const all = [...state.employees];
-    const matchedEmployee = all.find((e) => String(e.id).toUpperCase() === id && String(e.loginPin) === pin);
+    const matchedEmployee = state.employees.find((e) => String(e.id).toUpperCase() === id && String(e.loginPin) === pin);
     const matchedAdmin = state.admin && String(state.admin.id).toUpperCase() === id && String(state.admin.loginPin) === pin;
-
     if (!matchedEmployee && !matchedAdmin) {
       alert("Invalid Employee ID or PIN.");
       return;
     }
-
     const sessionUser = matchedAdmin ? state.admin : matchedEmployee;
     setSession({ id: sessionUser.id, accessRole: sessionUser.accessRole, name: sessionUser.name });
     window.location.href = "dashboard.html";
@@ -559,83 +801,53 @@ function isValidPin(pin) {
 function bindSettingsPage() {
   const ownForm = document.getElementById("change-pin-form");
   if (!ownForm) return;
-
   const user = currentUser();
   if (!user) return;
-
   const adminCard = document.getElementById("admin-pin-card");
-  if (isPrivileged(user)) {
-    adminCard?.classList.remove("hidden");
-  }
+  if (isPrivileged(user)) adminCard?.classList.remove("hidden");
 
   ownForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const currentPin = document.getElementById("current-pin")?.value?.trim() || "";
     const newPin = document.getElementById("new-pin")?.value?.trim() || "";
     const confirmPin = document.getElementById("confirm-new-pin")?.value?.trim() || "";
-
-    if (newPin !== confirmPin) {
-      alert("New PIN and confirm PIN do not match.");
-      return;
-    }
-    if (!isValidPin(newPin)) {
-      alert("PIN must be numeric and at least 4 digits.");
-      return;
-    }
-
+    if (newPin !== confirmPin) return alert("New PIN and confirm PIN do not match.");
+    if (!isValidPin(newPin)) return alert("PIN must be numeric and at least 4 digits.");
     if (user.id === "ADMIN") {
-      if (String(state.admin?.loginPin || "") !== currentPin) {
-        alert("Current PIN is incorrect.");
-        return;
-      }
+      if (String(state.admin?.loginPin || "") !== currentPin) return alert("Current PIN is incorrect.");
       state.admin.loginPin = newPin;
       saveAdminAccount();
-      alert("Admin PIN updated successfully.");
       ownForm.reset();
-      return;
+      return alert("Admin PIN updated successfully.");
     }
-
     const employee = state.employees.find((e) => e.id === user.id);
     if (!employee) return;
-    if (String(employee.loginPin || "") !== currentPin) {
-      alert("Current PIN is incorrect.");
-      return;
-    }
+    if (String(employee.loginPin || "") !== currentPin) return alert("Current PIN is incorrect.");
     employee.loginPin = newPin;
     saveEmployees();
-    alert("Your PIN updated successfully.");
     ownForm.reset();
+    alert("Your PIN updated successfully.");
   });
 
   const resetForm = document.getElementById("reset-pin-form");
   resetForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!isPrivileged(user)) return;
-
     const targetId = (document.getElementById("target-employee-id")?.value || "").trim().toUpperCase();
     const nextPin = (document.getElementById("target-new-pin")?.value || "").trim();
-    if (!isValidPin(nextPin)) {
-      alert("PIN must be numeric and at least 4 digits.");
-      return;
-    }
-
+    if (!isValidPin(nextPin)) return alert("PIN must be numeric and at least 4 digits.");
     if (targetId === "ADMIN") {
       state.admin.loginPin = nextPin;
       saveAdminAccount();
-      alert("Admin PIN reset successfully.");
       resetForm.reset();
-      return;
+      return alert("Admin PIN reset successfully.");
     }
-
     const employee = state.employees.find((e) => String(e.id).toUpperCase() === targetId);
-    if (!employee) {
-      alert("Employee ID not found.");
-      return;
-    }
+    if (!employee) return alert("Employee ID not found.");
     employee.loginPin = nextPin;
     saveEmployees();
-    alert(`PIN reset for ${employee.name}.`);
     resetForm.reset();
+    alert(`PIN reset for ${employee.name}.`);
   });
 }
 
@@ -645,6 +857,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initTopbarUserUI();
   renderDashboard();
   bindEmployeesPage();
+  bindAttendancePage();
+  bindFeedbackPage();
+  bindAiInsightsPage();
   bindSettingsPage();
   renderAttendance();
   renderPerformance();

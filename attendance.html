@@ -17,6 +17,8 @@
           <a class="active" href="attendance.html">🗓 Attendance</a>
           <a href="performance.html">🚀 Performance</a>
           <a href="rewards.html">🎖 Rewards</a>
+          <a href="feedback.html">💬 Feedback</a>
+          <a href="ai-insights.html">🤖 AI Insights</a>
           <a href="settings.html">⚙ Settings</a>
         </nav>
       </aside>
@@ -33,6 +35,52 @@
           <h2 class="section-title">Attendance Percentage</h2>
           <p id="attendance-percent-text" class="muted">0% Overall Attendance</p>
           <div class="progress"><span id="attendance-percent-bar" style="width: 0%"></span></div>
+        </section>
+
+        <section class="section card">
+          <h2 class="section-title">Mark Daily Attendance</h2>
+          <form id="attendance-form" class="form-grid">
+            <select id="attendance-employee" required></select>
+            <input id="attendance-date" type="date" required />
+            <select id="attendance-status" required>
+              <option value="">Select status</option>
+              <option>Present</option>
+              <option>Absent</option>
+              <option>Late</option>
+              <option>Leave</option>
+            </select>
+            <div class="form-actions">
+              <button class="btn-primary" type="submit">Mark Attendance</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="section card">
+          <h2 class="section-title">Leave Requests</h2>
+          <form id="leave-form" class="form-grid">
+            <select id="leave-employee" required></select>
+            <input id="leave-from" type="date" required />
+            <input id="leave-to" type="date" required />
+            <input id="leave-reason" type="text" placeholder="Reason for leave" required />
+            <div class="form-actions">
+              <button class="btn-secondary" type="submit">Submit Leave Request</button>
+            </div>
+          </form>
+          <div class="section table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Employee</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="leave-body"></tbody>
+            </table>
+          </div>
         </section>
 
         <section class="section split-grid">

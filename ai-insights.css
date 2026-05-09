@@ -1,0 +1,126 @@
+.insights-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-dropdown {
+  position: relative;
+}
+
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: 42px;
+  background: var(--surface);
+  border: 1px solid var(--border, #e8ecff);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  min-width: 180px;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.profile-menu a {
+  display: block;
+  padding: 10px 12px;
+}
+
+.profile-menu a:hover {
+  background: #f4f7ff;
+}
+
+.ai-widget-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.insight-card {
+  min-height: 110px;
+}
+
+.metric-card .value,
+.insight-card .value {
+  margin-top: 8px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 23, 47, 0.38);
+  display: grid;
+  place-items: center;
+  z-index: 10;
+}
+
+.loader-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e3e9ff;
+  box-shadow: 0 16px 36px rgba(32, 51, 124, 0.24);
+  width: min(420px, 90vw);
+  padding: 20px;
+  text-align: center;
+}
+
+.loader {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  border: 4px solid #dbe4ff;
+  border-top-color: var(--primary);
+  animation: spin 0.8s linear infinite;
+}
+
+body.dark-mode {
+  --bg: #11162b;
+  --surface: #1a2140;
+  --surface-soft: #222b50;
+  --text: #ecf0ff;
+  --muted: #b7c2ed;
+  --border: #313d70;
+  --border-strong: #3d4a82;
+}
+
+body.dark-mode .topbar,
+body.dark-mode .card,
+body.dark-mode .table-wrap {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1200px) {
+  .ai-widget-grid {
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+  }
+
+  .chart-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .ai-widget-grid,
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Insights</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="ai-insights.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -25,24 +27,84 @@
         <header class="topbar">
           <div class="title-group">
             <h1>AI Reward Insights</h1>
-            <p>Data-driven recommendations for fair and efficient rewards.</p>
+            <p>Data-driven, fair, and efficient HR decision intelligence.</p>
           </div>
-          <div class="avatar">AI</div>
+          <div class="insights-actions">
+            <button id="theme-toggle" class="btn-secondary" type="button">🌙 Dark</button>
+            <button id="notification-btn" class="btn-secondary" type="button">🔔</button>
+            <div class="profile-dropdown">
+              <button id="profile-btn" class="btn-secondary" type="button">👤 Profile</button>
+              <div id="profile-menu" class="profile-menu hidden">
+                <a href="settings.html">Account Settings</a>
+                <a href="settings.html">Preferences</a>
+                <a href="index.html">Switch Account</a>
+              </div>
+            </div>
+          </div>
         </header>
 
-        <section class="card">
+        <section class="ai-widget-grid">
+          <article class="card metric-card"><h3>Total Employees</h3><div id="w-total" class="value">0</div></article>
+          <article class="card metric-card"><h3>Average Performance</h3><div id="w-performance" class="value">0%</div></article>
+          <article class="card metric-card"><h3>Monthly Attendance</h3><div id="w-attendance" class="value">0%</div></article>
+          <article class="card metric-card"><h3>Rewards Distributed</h3><div id="w-rewards" class="value">0</div></article>
+          <article class="card metric-card"><h3>Pending Reviews</h3><div id="w-pending" class="value">0</div></article>
+        </section>
+
+        <section class="section ai-widget-grid">
+          <article class="card insight-card"><h3>AI Performance Score</h3><p id="ai-performance-score" class="value">0</p></article>
+          <article class="card insight-card"><h3>Productivity Analytics</h3><p id="ai-productivity" class="value">0%</p></article>
+          <article class="card insight-card"><h3>Attendance Trends</h3><p id="ai-trend" class="value">Stable</p></article>
+          <article class="card insight-card"><h3>Burnout Risk</h3><p id="ai-burnout" class="value">Low</p></article>
+          <article class="card insight-card"><h3>Fairness Analysis</h3><p id="ai-fairness" class="value">Balanced</p></article>
+          <article class="card insight-card"><h3>Engagement Score</h3><p id="ai-engagement" class="value">0%</p></article>
+          <article class="card insight-card"><h3>Top Performers</h3><div id="top-performers"></div></article>
+          <article class="card insight-card"><h3>AI Reward Recommendations</h3><p id="ai-recommendations-summary" class="muted">Generating...</p></article>
+        </section>
+
+        <section class="section chart-grid">
+          <article class="card">
+            <h3 class="section-title">Employee Performance</h3>
+            <canvas id="performance-bar-chart" height="170"></canvas>
+          </article>
+          <article class="card">
+            <h3 class="section-title">Attendance Trend</h3>
+            <canvas id="attendance-line-chart" height="170"></canvas>
+          </article>
+          <article class="card">
+            <h3 class="section-title">Rewards Distribution</h3>
+            <canvas id="rewards-pie-chart" height="170"></canvas>
+          </article>
+        </section>
+
+        <section class="section card">
           <h2 class="section-title">Tools Integration</h2>
           <div class="tool-grid">
-            <div class="rank-card"><strong>Microsoft Copilot</strong><span>Policy drafting & logic support</span></div>
-            <div class="rank-card"><strong>Power BI</strong><span>Fairness dashboards and trend analysis</span></div>
-            <div class="rank-card"><strong>Canva AI</strong><span>Badge designs and visuals</span></div>
-            <div class="rank-card"><strong>Python/ML</strong><span>Scoring, recommendations, fairness flags</span></div>
+            <div class="rank-card"><strong>Microsoft Copilot</strong><span>Policy drafting, code support, explainability text</span></div>
+            <div class="rank-card"><strong>Power BI</strong><span>Exported analytics and fairness dashboards</span></div>
+            <div class="rank-card"><strong>Canva AI</strong><span>Badge and reward visual asset generation</span></div>
+            <div class="rank-card"><strong>Python/ML Models</strong><span>Recommendation scoring and bias checks</span></div>
           </div>
           <div class="toolbar section">
-            <button id="export-ai-data" class="btn-secondary" type="button">Export Data (Power BI / Python)</button>
-            <button id="run-ai-recommendation" class="btn-primary" type="button">Run AI Recommendation</button>
+            <button id="export-ai-data" class="btn-secondary" type="button">Export Data (Power BI/Python)</button>
+            <button id="run-ai-recommendation" class="btn-primary" type="button">Run AI Recommendation Logic</button>
           </div>
           <p id="ai-run-status" class="muted"></p>
+        </section>
+
+        <section class="section card">
+          <div class="toolbar">
+            <input id="employee-search-ai" type="search" placeholder="Search employee..." />
+            <select id="department-filter-ai">
+              <option value="All">All Departments</option>
+            </select>
+            <select id="sort-ai-table">
+              <option value="score-desc">Sort by AI Score (High-Low)</option>
+              <option value="score-asc">Sort by AI Score (Low-High)</option>
+              <option value="risk-desc">Sort by Risk</option>
+              <option value="name-asc">Sort by Name</option>
+            </select>
+          </div>
         </section>
 
         <section class="section table-wrap">
@@ -51,18 +113,27 @@
               <tr>
                 <th>Employee</th>
                 <th>AI Points</th>
-                <th>Bonus Type</th>
-                <th>Fairness Flag</th>
-                <th>Explanation</th>
-                <th>Approval</th>
+                <th>Recommendation</th>
+                <th>Risk Level</th>
+                <th>Reward Suggestion</th>
+                <th>Approval Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="ai-recommendation-body"></tbody>
           </table>
         </section>
+
+        <section id="ai-loading" class="loading-overlay hidden">
+          <div class="loader-card">
+            <div class="loader"></div>
+            <p>Analyzing performance, attendance, feedback, and productivity...</p>
+          </div>
+        </section>
       </main>
     </div>
     <script src="data.js"></script>
     <script src="app.js"></script>
+    <script src="ai-insights.js"></script>
   </body>
 </html>

@@ -741,6 +741,8 @@ function runAiModelInBrowser() {
 }
 
 function bindAiInsightsPage() {
+  // New redesigned AI Insights page is handled by ai-insights.js
+  if (document.getElementById("employee-search-ai")) return;
   const exportBtn = document.getElementById("export-ai-data");
   const runBtn = document.getElementById("run-ai-recommendation");
   if (!exportBtn && !runBtn) return;

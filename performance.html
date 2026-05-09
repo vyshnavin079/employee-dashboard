@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Performance</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="logo">PulseBoard</div>
+        <nav class="nav-links">
+          <a href="dashboard.html">📊 Dashboard</a>
+          <a href="employees.html">👤 Employees</a>
+          <a href="attendance.html">🗓 Attendance</a>
+          <a class="active" href="performance.html">🚀 Performance</a>
+          <a href="rewards.html">🎖 Rewards</a>
+          <a href="settings.html">⚙ Settings</a>
+        </nav>
+      </aside>
+      <main class="content">
+        <header class="topbar">
+          <div class="title-group">
+            <h1>Performance Tracking</h1>
+            <p>Review scores, productivity, and top performer rankings.</p>
+          </div>
+          <div class="avatar">PF</div>
+        </header>
+
+        <section class="split-grid">
+          <article class="card">
+            <h2 class="section-title">Productivity Chart</h2>
+            <canvas id="productivityChart" height="200"></canvas>
+          </article>
+          <article class="card">
+            <h2 class="section-title">Top Performers</h2>
+            <div id="ranking-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

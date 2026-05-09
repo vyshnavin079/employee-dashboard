@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Dashboard - Login</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="auth-shell">
+    <section class="auth-card">
+      <h1>Welcome Back</h1>
+      <p class="muted">Sign in to manage your employee dashboard.</p>
+      <form id="login-form">
+        <input id="login-id" type="text" placeholder="Employee ID (e.g., EMP-1001 or ADMIN)" required />
+        <input id="login-pin" type="password" placeholder="PIN (demo: 1001…1008, admin: 0000)" required />
+        <button class="btn-primary" type="submit">Login</button>
+      </form>
+    </section>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

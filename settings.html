@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="logo">PulseBoard</div>
+        <nav class="nav-links">
+          <a href="dashboard.html">📊 Dashboard</a>
+          <a href="employees.html">👤 Employees</a>
+          <a href="attendance.html">🗓 Attendance</a>
+          <a href="performance.html">🚀 Performance</a>
+          <a href="rewards.html">🎖 Rewards</a>
+          <a class="active" href="settings.html">⚙ Settings</a>
+        </nav>
+      </aside>
+      <main class="content">
+        <header class="topbar">
+          <div class="title-group">
+            <h1>Settings</h1>
+            <p>Application preferences and account configuration.</p>
+          </div>
+          <div class="avatar">ST</div>
+        </header>
+
+        <section class="card">
+          <h2 class="section-title">General Preferences</h2>
+          <div class="toolbar">
+            <input type="text" placeholder="Organization Name" value="PulseBoard Inc." />
+            <input type="email" placeholder="Admin Email" value="admin@company.com" />
+            <select>
+              <option>Purple/Blue Theme</option>
+              <option>Dark Theme</option>
+            </select>
+            <button class="btn-primary">Save Settings</button>
+          </div>
+        </section>
+
+        <section class="card section">
+          <h2 class="section-title">Change My Password (PIN)</h2>
+          <form id="change-pin-form" class="form-grid">
+            <input id="current-pin" type="password" placeholder="Current PIN" required />
+            <input id="new-pin" type="password" placeholder="New PIN (min 4 digits)" required />
+            <input id="confirm-new-pin" type="password" placeholder="Confirm New PIN" required />
+            <div class="form-actions">
+              <button class="btn-primary" type="submit">Update My PIN</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="admin-pin-card" class="card section hidden">
+          <h2 class="section-title">Admin/Manager: Reset Employee PIN</h2>
+          <form id="reset-pin-form" class="form-grid">
+            <input id="target-employee-id" type="text" placeholder="Employee ID (e.g., EMP-1003)" required />
+            <input id="target-new-pin" type="password" placeholder="New PIN (min 4 digits)" required />
+            <div class="form-actions">
+              <button class="btn-secondary" type="submit">Reset Employee PIN</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employees</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="logo">PulseBoard</div>
+        <nav class="nav-links">
+          <a href="dashboard.html">📊 Dashboard</a>
+          <a class="active" href="employees.html">👤 Employees</a>
+          <a href="attendance.html">🗓 Attendance</a>
+          <a href="performance.html">🚀 Performance</a>
+          <a href="rewards.html">🎖 Rewards</a>
+          <a href="settings.html">⚙ Settings</a>
+        </nav>
+      </aside>
+      <main class="content">
+        <header class="topbar">
+          <div class="title-group">
+            <h1>Employee Management</h1>
+            <p>Search, filter, and maintain employee records.</p>
+          </div>
+          <div class="avatar">HR</div>
+        </header>
+
+        <section class="toolbar">
+          <input id="employee-search" type="search" placeholder="Search by name, ID, or email" />
+          <select id="department-filter">
+            <option>All</option>
+            <option>Engineering</option>
+            <option>HR</option>
+            <option>Design</option>
+            <option>Sales</option>
+            <option>Marketing</option>
+            <option>Finance</option>
+          </select>
+          <button id="add-employee" class="btn-primary" type="button">Add New Employee</button>
+          <button id="delete-all-employees" class="btn-danger" type="button">Delete All Employees</button>
+        </section>
+
+        <section id="employee-form-card" class="card hidden">
+          <h2 class="section-title">Employee Details</h2>
+          <form id="employee-form" class="form-grid">
+            <input id="form-id" type="hidden" />
+            <input id="form-name" type="text" placeholder="Employee Name" required />
+            <input id="form-department" type="text" placeholder="Department" required />
+            <input id="form-role" type="text" placeholder="Role" required />
+            <input id="form-email" type="email" placeholder="Email" required />
+            <select id="form-attendance">
+              <option>Present</option>
+              <option>Absent</option>
+              <option>Late</option>
+              <option>Leave</option>
+            </select>
+            <input id="form-performance" type="number" min="0" max="100" placeholder="Performance Score (0-100)" required />
+            <input id="form-rewards" type="number" min="0" placeholder="Reward Points" required />
+            <input id="form-task" type="number" min="0" max="100" placeholder="Task Completion % (0-100)" required />
+            <input id="form-productivity" type="number" min="0" max="100" placeholder="Productivity % (0-100)" required />
+            <input id="form-attendance-percent" type="number" min="0" max="100" placeholder="Attendance % (0-100)" required />
+            <div class="form-actions">
+              <button id="save-employee" class="btn-primary" type="submit">Save Employee</button>
+              <button id="cancel-employee" class="btn-secondary" type="button">Cancel</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee Name</th>
+                <th>Employee ID</th>
+                <th>Department</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Attendance Status</th>
+                <th>Performance Score</th>
+                <th>Reward Points</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employees-body"></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

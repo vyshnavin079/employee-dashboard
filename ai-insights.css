@@ -60,6 +60,10 @@
   z-index: 10;
 }
 
+.loading-overlay.hidden {
+  display: none;
+}
+
 .loader-card {
   background: #fff;
   border-radius: 14px;

@@ -1,4 +1,8 @@
 (function () {
+  const fallbackEmployees = typeof employees !== "undefined" ? employees : [];
+  const fallbackFeedback = typeof feedbackEntries !== "undefined" ? feedbackEntries : [];
+  const fallbackAttendance = typeof dailyAttendance !== "undefined" ? dailyAttendance : [];
+  const fallbackRewards = typeof rewardHistory !== "undefined" ? rewardHistory : [];
   const aiRows = [];
   let filteredRows = [];
   let performanceChart;
@@ -8,36 +12,36 @@
   function employeesData() {
     try {
       const raw = localStorage.getItem("employee-dashboard-employees");
-      return raw ? JSON.parse(raw) : window.employees || [];
+      return raw ? JSON.parse(raw) : fallbackEmployees;
     } catch (_error) {
-      return window.employees || [];
+      return fallbackEmployees;
     }
   }
 
   function feedbackData() {
     try {
       const raw = localStorage.getItem("employee-dashboard-feedback");
-      return raw ? JSON.parse(raw) : window.feedbackEntries || [];
+      return raw ? JSON.parse(raw) : fallbackFeedback;
     } catch (_error) {
-      return window.feedbackEntries || [];
+      return fallbackFeedback;
     }
   }
 
   function attendanceData() {
     try {
       const raw = localStorage.getItem("employee-dashboard-attendance-logs");
-      return raw ? JSON.parse(raw) : window.dailyAttendance || [];
+      return raw ? JSON.parse(raw) : fallbackAttendance;
     } catch (_error) {
-      return window.dailyAttendance || [];
+      return fallbackAttendance;
     }
   }
 
   function rewardData() {
     try {
       const raw = localStorage.getItem("employee-dashboard-reward-history");
-      return raw ? JSON.parse(raw) : window.rewardHistory || [];
+      return raw ? JSON.parse(raw) : fallbackRewards;
     } catch (_error) {
-      return window.rewardHistory || [];
+      return fallbackRewards;
     }
   }
 
@@ -295,21 +299,31 @@
     const runBtn = document.getElementById("run-ai-recommendation");
     const loading = document.getElementById("ai-loading");
     const status = document.getElementById("ai-run-status");
+    const setLoading = (show) => {
+      if (!loading) return;
+      loading.style.display = show ? "grid" : "none";
+    };
+    setLoading(false);
     runBtn.addEventListener("click", () => {
-      loading.classList.remove("hidden");
+      setLoading(true);
       status.textContent = "AI simulation running...";
       setTimeout(() => {
-        aiRows.forEach((row) => {
-          const delta = Math.floor(Math.random() * 7) - 3;
-          row.aiScore = Math.max(45, Math.min(99, row.aiScore + delta));
-          row.risk = riskLabel(row.aiScore);
-          row.recommendation = recommendationLabel(row.aiScore);
-          row.rewardSuggestion = rewardSuggestion(row.aiScore);
-          row.approval = row.aiScore >= 80 ? "Approved" : "Pending Review";
-        });
-        loading.classList.add("hidden");
-        status.textContent = "AI recommendation logic completed. Results refreshed.";
-        applyFiltersAndSort();
+        try {
+          aiRows.forEach((row) => {
+            const delta = Math.floor(Math.random() * 7) - 3;
+            row.aiScore = Math.max(45, Math.min(99, row.aiScore + delta));
+            row.risk = riskLabel(row.aiScore);
+            row.recommendation = recommendationLabel(row.aiScore);
+            row.rewardSuggestion = rewardSuggestion(row.aiScore);
+            row.approval = row.aiScore >= 80 ? "Approved" : "Pending Review";
+          });
+          status.textContent = "AI recommendation logic completed. Results refreshed.";
+          applyFiltersAndSort();
+        } catch (_error) {
+          status.textContent = "Unable to run AI simulation. Please refresh once.";
+        } finally {
+          setLoading(false);
+        }
       }, 1300);
     });
   }
